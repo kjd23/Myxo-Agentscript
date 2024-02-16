@@ -68,6 +68,8 @@ export default class SlimeMoldModel extends Model {
         let Diff_flag = 0
         let turtles_in_radius = this.turtles.inRadius(turtle, radius, true)
         let theta = 89
+        nStepsSave = 5 // will save agent position data every nStepsSave steps
+        agentPos = Array() // create array for storing position data
 
 	 const aligned_turtles_ahead = turtles_in_radius
      this.turtles.ask(a => {
@@ -120,48 +122,53 @@ export default class SlimeMoldModel extends Model {
            turtle.left(randomWiggle)
  //
           
-          // We look at three patches: directly ahead, ahead and to the right,
-          // and ahead and to the left of the turtle
-          let patchAhead = turtle.patchAhead(1)
-          let patchRight = turtle.patchRightAndAhead(wiggleAngle, 1)
-          let patchLeft = turtle.patchLeftAndAhead(wiggleAngle, 1)
+      // We look at three patches: directly ahead, ahead and to the right,
+      // and ahead and to the left of the turtle
+      let patchAhead = turtle.patchAhead(1)
+      let patchRight = turtle.patchRightAndAhead(wiggleAngle, 1)
+      let patchLeft = turtle.patchLeftAndAhead(wiggleAngle, 1)
+      
+      if (patchAhead && patchLeft && patchRight) {
+          // If the patch to the right has the most pheromone, we turn right
+          if (patchRight.pheromone > patchLeft.pheromone &&
+              patchRight.pheromone > patchAhead.pheromone) {
+              turtle.right(wiggleAngle) 
+          }
+
+          // If the patch to the left has the most pheromone, we turn left
+          if (patchLeft.pheromone > patchRight.pheromone &&
+              patchLeft.pheromone > patchAhead.pheromone) {                  
+              turtle.left(wiggleAngle)  
+          }
           
-          if (patchAhead && patchLeft && patchRight) {
-              // If the patch to the right has the most pheromone, we turn right
-              if (patchRight.pheromone > patchLeft.pheromone &&
-                  patchRight.pheromone > patchAhead.pheromone) {
-                  turtle.right(wiggleAngle) 
-              }
+        // If the patch ahead has the most pheromone, we don't rotate at all
+      } 
 
-              // If the patch to the left has the most pheromone, we turn left
-              if (patchLeft.pheromone > patchRight.pheromone &&
-                  patchLeft.pheromone > patchAhead.pheromone) {                  
-                  turtle.left(wiggleAngle)  
-              }
-              
-              // If the patch ahead has the most pheromone, we don't rotate at all
-          } 
-
-          // If there's no patch to our right or left (because we're at the edge
-          // of the world) we turn around.
-          if (!patchRight) turtle.left(90)
-          if (!patchLeft) turtle.right(90)
+      // If there's no patch to our right or left (because we're at the edge
+      // of the world) we turn around.
+      if (!patchRight) turtle.left(90)
+      if (!patchLeft) turtle.right(90)
         
-          // This last bit should look familiar. Move forward,
-          // and add some pheromone to the turtle's patch
-          turtle.forward(speed*delta_t+Diff_flag*util.randomNormal(0,Math.sqrt(2*D*delta_t)))
-          turtle.patch.pheromone += 0
-        })
+      // This last bit should look familiar. Move forward,
+      // and add some pheromone to the turtle's patch
+      turtle.forward(speed*delta_t+Diff_flag*util.randomNormal(0,Math.sqrt(2*D*delta_t)))
+      turtle.patch.pheromone += 0
+    })
 
-        // This part is new. patches.diffuse() causes each patch to give
-        // some of its pheromone to its neighbors. Try changing the
-        // diffusion amount and see what happens.
-//        this.patches.diffuse('pheromone', 0.5)
+    // This part is new. patches.diffuse() causes each patch to give
+    // some of its pheromone to its neighbors. Try changing the
+    // diffusion amount and see what happens.
+//       this.patches.diffuse('pheromone', 0.5)
 
-        // Evaporate the pheromone over time
-        //this.patches.ask(patch => {
- //           patch.pheromone *= 0.1
- //       })             
+    // Evaporate the pheromone over time
+    //this.patches.ask(patch => {
+ //          patch.pheromone *= 0.1
+ //      })             
+      if (util.mod(this.ticks,this.nStepsSave) == 0) {
+         // save current position data into array using .push()
+         this.agentPos.push(this.turtles.map(t => t.x))
+         console.log('successful data store!')
+     }
     }
    // Function to log turtle positions
     printPositions() {
@@ -171,4 +178,41 @@ export default class SlimeMoldModel extends Model {
     printHeading() {
         return this.turtles.map(h => h.heading)
     }
+
+    downloadArray(filename) {
+        
+        if(!this.agentPos) {
+            console.error('Console.save: No data')
+        }
+
+        if(!filename) filename = 'console.json'
+
+        if(typeof this.agentPos === "object"){
+            var data = ''
+            let dataTemp = ''
+            for (let i=0; i < Math.floor(this.ticks/this.nStepsSave); i++ ) {
+                for (let j=0; j < this.population; j++ ){
+                    dataTemp = JSON.stringify(this.agentPos[i][j], undefined, 4)
+                    data = data.concat(dataTemp,', ')
+                }
+                if (i !== Math.floor(this.ticks/this.nStepsSave) - 1) {
+                    data = data.concat(' \n       ')
+                }
+            }            
+        }
+        util.toWindow({data})
+
+        var blob = new Blob([data], {type: 'text/json'}),
+        e    = document.createEvent('MouseEvents'),
+        a    = document.createElement('a')
+
+        a.download = filename
+        a.href = window.URL.createObjectURL(blob)
+        a.dataset.downloadurl =  ['text/json', a.download, a.href].join(':')
+        e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
+        a.dispatchEvent(e)
+        console.log('successful file save!')
+    }
+
+
 }

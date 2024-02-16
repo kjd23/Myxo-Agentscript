@@ -15,51 +15,50 @@
 
         util.repeat(1, model.step)
         let h0 = model.printHeading()
-
-        // util.printToPage(model.printPositions())
-
-        // const sample = util.sampleModel(model)
         let t0 = model.printPositions()
-
-        util.repeat(100, model.step)
-        let t1 = model.printPositions()
-        let h1 = model.printHeading()
-
-        util.repeat(100, model.step)
-        let t2 = model.printPositions()
-        let h2 = model.printHeading()
-
-        util.repeat(100, model.step)
-        let t3 = model.printPositions()
-        let h3 = model.printHeading()
-
-        util.repeat(100, model.step)
-        let t4 = model.printPositions()
-        let h4 = model.printHeading()
-
-        util.repeat(100, model.step)
-        let t5 = model.printPositions()
-        let h5 = model.printPositions()
-
-        util.repeat(100, model.step)
-        let t6 = model.printPositions()
-        let h6 = model.printHeading()
-
-        util.repeat(100, model.step)
-        let t7 = model.printPositions()
-        let h7 = model.printHeading()
-
-        util.repeat(100, model.step)
-        let t8 = model.printPositions()
-        let h8 = model.printHeading()
-
-        util.repeat(100, model.step)
-        let t9 = model.printPositions()
-
-        // let h = model.printHeading()
 
         util.toWindow({util, model, t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,h0,h1,h2,h3,h4})
         util.printToPage(t0,t1,t2,t3,t4)
+
+        model.downloadArray(filename)
+
     </script>
 </body>
 </html>
+
+// util.repeat(100, model.step)
+// let t1 = model.printPositions()
+// let h1 = model.printHeading()
+// 
+// util.repeat(100, model.step)
+// let t2 = model.printPositions()
+// let h2 = model.printHeading()
+// 
+// util.repeat(100, model.step)
+// let t3 = model.printPositions()
+// let h3 = model.printHeading()
+// 
+// util.repeat(100, model.step)
+// let t4 = model.printPositions()
+// let h4 = model.printHeading()
+// 
+// util.repeat(100, model.step)
+// let t5 = model.printPositions()
+// let h5 = model.printPositions()
+// 
+// util.repeat(100, model.step)
+// let t6 = model.printPositions()
+// let h6 = model.printHeading()
+// 
+// util.repeat(100, model.step)
+// let t7 = model.printPositions()
+// let h7 = model.printHeading()
+// 
+// util.repeat(100, model.step)
+// let t8 = model.printPositions()
+// let h8 = model.printHeading()
+// 
+// util.repeat(100, model.step)
+// let t9 = model.printPositions()
+// 
+// // let h = model.printHeading()
