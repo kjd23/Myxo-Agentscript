@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+const process = require('process')
+const esmImport = require('esm')(module)
+
+const geofilters = esmImport('../src/geofilters.js')
+
+let data = ''
+process.stdin.on('readable', () => {
+    while ((chunk = process.stdin.read()) !== null) {
+        data += chunk
+    }
+})
+
+process.stdin.on('end', () => {
+    process.stdout.write(processData(data))
+})
+
+function processData(data) {
+    const json = JSON.parse(data)
+    const streets = geofilters.streetsFilter(json)
+    return JSON.stringify(streets, null, 2)
+}

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Tile Droplets</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="./map.css">
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <script type="module">
+        import * as util from '../src/utils.js'
+        import * as gis from '../src/gis.js'
+
+        import Animator from '../src/Animator.js'
+        import Model from '../models/DropletsModel.js'
+        import TwoDraw from '../src/TwoDraw.js'
+
+        import * as L from 'https://unpkg.com/leaflet@1.8.0/dist/leaflet-src.esm.js'
+        import elementOverlay from '../vendor/elementOverlay.js'
+
+        const ElementOverlay = elementOverlay(L)
+
+        // ========== Setup map and layers ==========
+
+        const [lon, lat, Z] = [-105.93, 35.67, 10] // Santa Fe:
+        const [X, Y] = gis.lonlatz2xy(lon, lat, Z)
+
+        const map = L.map('map', {
+            zoomDelta: 0.25, //0.1
+            zoomSnap: 0,
+        }).setView([lat, lon], Z)
+
+        const style = 'topo' // osm topo smooth usgs
+        L.tileLayer(gis.template(style), {
+            attribution: gis.attribution(style),
+        }).addTo(map)
+
+        const centerTile = L.rectangle(centerTileBounds(), {
+            color: 'black',
+        })
+            .bindPopup(layer => centerTileString())
+            .addTo(map)
+        centerTile.openPopup(centerTileLatLon())
+
+        util.toWindow({ map, centerTile })
+
+        // ========== Setup model, view & animator ==========
+        const drawOptions = {
+            patchesColor: 'transparent',
+            turtlesShape: 'circle',
+            turtlesColor: 'blue',
+            turtlesSize: 0.8,
+        }
+
+        let anim, view, centerTileOverlay
+        async function runModel(Z, X, Y) {
+            if (anim) anim.stop()
+
+            const model = new Model()
+            await model.startup([Z, X, Y])
+            model.setup()
+
+            view = new TwoDraw(model, {
+                div: util.createCanvas(0, 0), // the view will resize
+                patchSize: 20,
+                drawOptions,
+            })
+
+            if (centerTileOverlay) { centerTileOverlay.remove() }
+            centerTileOverlay = new ElementOverlay(
+                view.canvas,
+                centerTileBounds()
+            ).addTo(map)
+
+            anim = new Animator(
+                () => {
+                    model.step()
+                    view.draw()
+                    if (model.moves === 0) {
+                        console.log('Model done, stopping at', model.ticks)
+                        anim.stop()
+                    }
+                },
+                500, // run 500 steps
+                30 // 30 fps
+            )
+
+            util.toWindow({ model, view, anim })
+        }
+
+
+        // ========== Map interactions. Restarts model on new click ==========
+
+        map.on('zoomend', update)
+        map.on('moveend', update)
+        centerTile.on('click', restartModel)
+
+        function update(ev) {
+            const bounds = centerTileBounds()
+            centerTile.setBounds(bounds)
+            centerTile.openPopup(centerTileLatLon())
+
+            if (anim) { // i.e. the model has run
+                anim.stop()
+                util.clearCtx(view.ctx)
+                centerTileOverlay.setBounds(bounds)
+            }
+        }
+        async function restartModel(ev) {
+            centerTile.closePopup()
+            const [X, Y, Z] = centerTileXYZ()
+            await runModel(Z, X, Y)
+        }
+
+        // ========== Map utility functions ==========
+
+        function centerTileXYZ() {
+            const { lat, lng: lon } = map.getCenter()
+            const Z = Math.round(map.getZoom())
+            const [X, Y] = gis.lonlatz2xy(lon, lat, Z)
+            return [X, Y, Z]
+        }
+        function centerTileBBox() {
+            const [X, Y, Z] = centerTileXYZ()
+            return gis.xyz2bbox(X, Y, Z)
+        }
+        function centerTileBounds() {
+            const bbox = centerTileBBox()
+            return gis.latlon(gis.bboxBounds(bbox))
+        }
+        function centerTileLatLon() {
+            const bbox = centerTileBBox()
+            return gis.latlon(gis.bboxCenter(bbox))
+        }
+        function centerTileString() {
+            const [X, Y, Z] = centerTileXYZ()
+            let [lon, lat] = gis.xyz2lonlat(X, Y, Z)
+            lon = util.precision(lon, 2)
+            lat = util.precision(lat, 2)
+            return `X:${X} Y:${Y} Z:${Z} lon:${lon} lat:${lat}<br>Click to run droplets here`
+        }
+    </script>
+</body>
+
+</html>
