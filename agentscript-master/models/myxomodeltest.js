@@ -9,7 +9,7 @@ export default class SlimeMoldModel extends Model {
     // executed only once, to setup the model.
     //
 
-    nStepsSave = 100 // will save agent position data every nStepsSave steps
+    nStepsSave = 1200 // will save agent position data every nStepsSave steps
     agentPos = Array() // create array for storing position data
     agentHead = Array() // create array for heading data
     turtleNumber = 5000
