@@ -6,21 +6,36 @@
     <script type="module">
         import * as util from '../src/utils.js'
         import Model from '../models/myxomodeltest.js'
+        import TwoDraw from '../src/TwoDraw.js'
+        import ColorMap from '../src/ColorMap.js'
+      
 
         let PosFilename= 'position.txt'
         let HeadFilename= 'heading.txt' // try .csv extension
 
         // util.printToPage('Running for 100 steps.')
-
+        const colorMap = ColorMap.gradientColorMap(
+            8, ['black', 'purple', 'yellow']
+        )
         const model = new Model()
         await model.startup()
         model.setup()
 
-        let steps = 1200
+        const view = new TwoDraw(model, {
+            div: 'modelDiv',
+            patchSize: 20,
+            drawOptions: {
+                turtlesSize: 2,
+                patchesColor: (p) => colorMap.scaleColor(p.pheromone, 0, 100)
+            }
+        })
+
+        let steps = 280
 
         util.repeat(steps, model.step)
+        view.draw()
         
-        util.toWindow({util, model})
+        util.toWindow({util, model, view})
 
         model.downloadPosArray(PosFilename)
         model.downloadHeadArray(HeadFilename)
