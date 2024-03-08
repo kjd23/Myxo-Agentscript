@@ -9,8 +9,8 @@ export default class SlimeMoldModel extends Model {
     // executed only once, to setup the model.
     //
 
-    nStepsSave = 1200 // will save agent position data every nStepsSave steps
-    agentPos = Array() // create array for storing position data
+    nStepsSave = 28 // will save agent position data every nStepsSave steps
+    agentPos = Array() // create array for storing position data // ex, 10, 5000 for 10 savesteps 5000 turtles
     agentHead = Array() // create array for heading data
     turtleNumber = 5000
 	
@@ -40,7 +40,14 @@ export default class SlimeMoldModel extends Model {
         // Initialize and store initial position for each turtle
         this.turtlePositions[turtleIndex] = [{ x: turtle.xcor, y: turtle.ycor }];
         
-        turtle.heading = 90; // randomize heading 2/7
+        // random left/right headings
+        let randHeading = util.randomFloat2(-1,1)
+        if (randHeading < 0){
+            turtle.heading = 90
+        } 
+        if (randHeading > 0){
+            turtle.heading = 270
+        }
     });
 
     this.turtles.ask(turtle => {
@@ -52,11 +59,10 @@ export default class SlimeMoldModel extends Model {
     console.log('successful data store!')
 }
 
-    // 
+    
     // The step function is like a "run forever" block. It gets
     // executed over and over again.
-    // 
-
+    
     step() {        
 
         this.stepCount++; // Increment step count on each step
@@ -71,7 +77,7 @@ export default class SlimeMoldModel extends Model {
         let speed = 7
         let radius = this.radius
         let wiggleAngle = 30
-        let D = 0.1 // diffusion
+        let D = 1 // diffusion
         let Diff_flag = 0
         let turtles_in_radius = this.turtles.inRadius(turtle, radius, true)
         let theta = 89
