@@ -1,0 +1,66 @@
+<html>
+
+<head>
+    <title>Overlay</title>
+    <link rel="stylesheet" href="https://cdn.skypack.dev/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="./map.css">
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <script type="module">
+        import TwoDraw from '../src/TwoDraw.js'
+        import Animator from '../src/Animator.js'
+        import Model from '../models/HelloModel.js'
+        import * as gis from '../src/gis.js'
+        import * as util from '../src/utils.js'
+
+        import * as L from 'https://unpkg.com/leaflet@1.8.0/dist/leaflet-src.esm.js'
+        import elementOverlay from '../vendor/elementOverlay.js'
+
+
+
+
+        const xyz = [3370, 6451, 14]
+        const bbox = gis.xyz2bbox(...xyz)
+        const bboxCenter = gis.latlon(gis.bboxCenter(bbox))
+        const zoom = 15
+        console.log('bbox', bbox, '\nbboxCenter', bboxCenter)
+
+        const model = new Model()
+        await model.startup()
+        model.setup()
+
+        const view = new TwoDraw(model, {
+            div: util.createCanvas(0, 0), // the view will resize
+            patchSize: 20,
+            drawOptions: {
+                patchesColor: 'transparent',
+                turtlesSize: 3,
+            },
+        })
+
+        const map = L.map('map').setView(bboxCenter, zoom)
+        L.tileLayer(gis.template('osm'), {
+            attribution: gis.attribution('osm'),
+        }).addTo(map)
+
+        const bounds = gis.latlon(gis.bboxBounds(bbox))
+        const ElementOverlay = elementOverlay(L)
+        const layer = new ElementOverlay(view.canvas, bounds).addTo(map)
+
+        const anim = new Animator(
+            () => {
+                model.step()
+                view.draw()
+            },
+            1000, // run steps
+            30 // fps
+        )
+
+        util.toWindow({ util, model, view, map, layer, anim })
+    </script>
+</body>
+
+</html>

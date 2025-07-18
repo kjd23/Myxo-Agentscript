@@ -1,0 +1,59 @@
+//4/17 try decreasing density to see where trail folloiwng fails
+
+<html>
+<head>
+    <title>MyxoReversalsTrails</title>
+</head>
+<body>
+    <script type="module">
+        import * as util from '../src/utils.js'
+        import Model from '../models/MyxoReversalsTrails.js'
+        import TwoDraw from '../src/TwoDraw.js'
+        import ColorMap from '../src/ColorMap.js'
+        import Animator from '../src/Animator.js'
+
+        let PosFilename= 'position.txt'
+        let HeadFilename= 'heading.txt' 
+      
+        const colorMap = ColorMap.gradientColorMap(
+            8, ['black', 'purple', 'yellow']
+        )
+
+        util.toWindow({colorMap})
+        const model = new Model()
+        util.toWindow({model})
+        model.setup()
+
+        const view = new TwoDraw(model, {
+            div: 'modelDiv',
+            patchSize: 10,
+            drawOptions: {
+                turtlesSize: 2,
+                patchesColor: (p) => colorMap.scaleColor(p.pheromone, 0, 100)
+            }
+        })
+
+        const anim = new Animator(
+            () => {
+                model.step()
+                view.draw()
+            },
+            281, // run 500 steps
+            4 // 30 fps
+        )
+
+        let steps = 281
+
+        // util.repeat(steps, model.step);
+        // view.draw();
+        
+        
+        util.toWindow({util, model, view, colorMap, anim});
+
+        model.downloadPosArray(PosFilename);
+        model.downloadHeadArray(HeadFilename);
+
+    </script>
+    <div id="modelDiv"></div>
+</body>
+</html>

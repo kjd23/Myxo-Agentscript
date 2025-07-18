@@ -1,0 +1,58 @@
+<html>
+<head>
+    <title>Myxo1D</title>
+</head>
+<body>
+    <script type="module">
+
+        import * as util from '../src/utils.js'
+        import Model from '../models/myxo07_07_25.js'
+        // import TwoDraw from '../src/TwoDraw.js'
+        // import ColorMap from '../src/ColorMap.js'
+        // import Animator from '../src/Animator.js'
+
+
+
+        let PosFilename= '1Dposition.txt'
+        let HeadFilename= '1Dheading.txt' 
+      
+        // const colorMap = ColorMap.gradientColorMap(
+        //     8, ['black', 'purple', 'yellow']
+        // )
+
+        // util.toWindow({colorMap})
+        const model = new Model()
+        util.toWindow({model})
+        model.setup()
+
+        // const view = new TwoDraw(model, {
+        //     div: 'modelDiv',
+        //     patchSize: 20,
+        //     drawOptions: {
+        //         turtlesSize: 2,
+        //         patchesColor: (p) => colorMap.scaleColor(p.pheromone, 0, 100)
+        //     }
+        // })
+
+        // const anim = new Animator(
+        //     () => {
+        //         model.step()
+        //         view.draw()
+        //     },
+        //     5, // run 500 steps
+        //     1 // 30 fps
+        // )
+
+        let steps = 28*7.5
+
+        util.repeat(steps, model.step);
+        // view.draw();
+        
+        util.toWindow({util, model});
+
+        model.downloadPosArray(PosFilename);
+        model.downloadHeadArray(HeadFilename);
+
+    </script>
+</body>
+</html>
