@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+
+// const gis = require('./gis.umd.js')
+const esmImport = require('esm')(module)
+const gis = esmImport('../src/gis.js')
+
+const https = require('https')
+
+const bbox = process.argv[2]
+// console.log(bbox)
+
+// const [, south, west, north, east] = bbox.match(
+//     /([^,]+),([^,]+),([^,]+),([^,]+)/
+// )
+// Our bbox is west, south, east, north
+const [, west, south, east, north] = bbox.match(/(.+),(.+),(.+),(.+)/)
+
+// // convert to numbers!
+// const [west, south, east, north] = gis.xyz2bbox(+x, +y, +z)
+
+// Use + to convert to numbers! Osm uses less standard directions
+const url = gis.getOsmURL(+south, +west, +north, +east)
+// console.log(url)
+
+https.get(url, res => {
+    res.setEncoding('utf8')
+    res.on('data', data => {
+        process.stdout.write(data)
+    })
+    res.on('end', () => {})
+})

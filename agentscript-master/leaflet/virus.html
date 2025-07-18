@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Virus</title>
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <script type="module">
+        import * as util from '../src/utils.js'
+        import * as gis from '../src/gis.js'
+
+        import Animator from '../src/Animator.js'
+        import GeoWorld from '../src/GeoWorld.js'
+        import Model from '../models/VirusModel.js'
+
+        import { geojsonBBox } from '../src/geojson.js'
+        import MapDraw from '../src/MapDraw.js'
+        import leafletInit from './leafletInit.js'
+
+        const turtleColors = {
+            infected: 'red',
+            susceptible: 'blue',
+            resistant: 'gray',
+        }
+        const drawOptions = {
+            // patchesColor: 'transparent', // default in MapDraw
+            turtlesShape: 'circle',
+            turtlesSize: 3,
+            turtlesColor: t => turtleColors[t.state],
+            linksColor: 'red',
+        }
+
+        const counties = await fetch(
+            '../models/data/nmcounties.json'
+        ).then(resp => resp.json())
+        const world = new GeoWorld({ bbox: counties, patchesWidth: 100 })
+
+        const model = new Model(world)
+        await model.startup()
+        model.setup()
+
+        const view = new MapDraw(model, {
+            // div: util.createCanvas(0, 0), // default & the view will resize
+            drawOptions,
+        })
+        await leafletInit(model, view.canvas, {
+            Z: 7,
+            terrain: 'osm',
+            json: counties,
+        })
+
+        const anim = new Animator(
+            () => {
+                model.step()
+                view.draw()
+            },
+            -1, // 500, // run 500 steps
+            20 // 30 // 30 fps
+        )
+
+        util.toWindow({ world, model, view, map, counties, anim })
+    </script>
+</body>
+
+</html>

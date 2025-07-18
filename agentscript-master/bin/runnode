@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+
+// const esmImport = require('esm')(module, { mode: 'all' })
+const esmImport = require('esm')(module)
+const str = process.argv[2] || 'hello'
+const className = str.charAt(0).toUpperCase() + str.slice(1) + 'Model'
+
+console.log('\nRunning', className)
+
+const Model = esmImport(`../models/${className}.js`).default
+const utils = esmImport('../src/utils.js')
+
+const model = new Model()
+async function run() {
+    await model.startup()
+    model.setup()
+    await utils.timeoutLoop(() => {
+        model.step()
+    }, 500)
+    const sample = utils.sampleModel(model)
+    console.log(sample)
+}
+run().catch(e => {
+    console.log(`\n!Error: ${className} failed to run: ${e}\n`)
+})

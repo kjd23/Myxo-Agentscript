@@ -1,0 +1,30 @@
+<html>
+<head>
+    <title>Pheromone</title>
+</head>
+<body>
+    <script type="module">
+        import * as util from '../src/utils.js'
+        import Model from '../models/arraytest.js'
+
+        let filename = 'test.txt'
+
+        const model = new Model()
+        await model.startup()
+        model.setup()
+
+        util.repeat(50, model.step)
+
+        const sample = util.sampleModel(model)
+        util.printToPage(sample)
+        util.toWindow({ util, model})
+
+        model.downloadArray(filename)
+
+
+        
+        
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+
+const shell = require('shelljs')
+
+const dir = './models'
+
+let models
+models = shell
+    .ls(`${dir}/*Model.js`)
+    // OK if first char is capitolized, index.html will just recap
+    .sed(/Model/, '')
+
+models = models
+    .sed(/^.*\//, '')
+    .sed(/.js$/, '')
+    .replace(/\n+$/, '')
+    .split('\n')
+    .map(str => str.charAt(0).toLowerCase() + str.slice(1))
+
+shell.echo('models:', models)
+models.forEach(model => shell.exec(`./bin/runnode ${model}`))

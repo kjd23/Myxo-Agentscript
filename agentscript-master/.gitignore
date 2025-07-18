@@ -1,0 +1,22 @@
+# Files to not include in git. See
+# https://git-scm.com/docs/gitignore and
+# https://gist.github.com/octocat/9257657
+
+# Derived files other than docs/
+/dist/
+
+node_modules
+web_modules
+npm-debug.log
+yarn-error.log
+/.vscode/
+**/.DS_Store
+
+/Attic/
+/test/samples.json
+/tests/
+/simple/
+/controls/
+
+# package-lock.json
+# yarn.lock

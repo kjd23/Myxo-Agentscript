@@ -1,0 +1,81 @@
+<html>
+
+<head>
+    <title>shapes</title>
+</head>
+
+<body>
+
+    <!-- HTML emojis -->
+    <!-- <p>I am copyright &copy; I am a lion &#129409; Me too &#x1F981; </p> -->
+
+    <script type="module">
+        import * as util from '../src/utils.js'
+        import TwoDraw from '../src/TwoDraw.js'
+        import Animator from '../src/Animator.js'
+        import Model from '../models/HelloModel.js'
+        import World from '../src/World.js'
+        import Shapes from '../src/Shapes.js'
+        import * as emoji from '../src/emoji.js'
+
+        // JS emojies
+        // console.log("At: \x40, Sum: \u2211, Tree: \u{1F332}")
+
+        const shapes = new Shapes()
+
+        function createEmojiPath(name, codePoint) {
+            const can = emoji.emoji2can(codePoint)
+            shapes.createImagePath(name, can)
+        }
+        async function addImages() {
+            await shapes.imagePathPromise(
+                'twitter',
+                '../models/data/twitter.png'
+            )
+            await shapes.imagePathPromise(
+                'redfish',
+                '../models/data/redfish.png'
+            )
+            createEmojiPath('lion', 0x1F981)
+            createEmojiPath('smiley', 0x1F600)
+            createEmojiPath('tree', 0x1F332)
+        }
+        function turtleName(t) {
+            return shapes.nameAtIndex(t.id)
+        }
+
+        await addImages()
+
+        const model = new Model(World.defaultOptions(25, 16))
+        model.population = 100
+        await model.startup()
+        model.setup()
+
+        const view = new TwoDraw(
+            model,
+            {
+                div: 'modelDiv',
+                patchSize: 20,
+            },
+            {
+                turtlesShape: t => turtleName(t),
+                turtlesSize: t => (turtleName(t) === 'redfish' ? 5 : 3),
+                turtlesRotate: t => (!["lion", "smiley", "tree"].includes(turtleName(t))),
+            }
+        )
+
+        const anim = new Animator(
+            () => {
+                model.step()
+                view.draw()
+            },
+            500, // run 500 steps
+            30 // 30 fps
+        )
+
+        // util.toWindow({ util, model, view, anim })
+    </script>
+    <div id="modelDiv"></div>
+</body>
+
+</html>
